@@ -1,12 +1,14 @@
 from langgraph.graph import StateGraph, END
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import AIMessage
 
 from state import AppState
+from graphs.faq_graph import create_faq_graph
 
 
 def create_router_graph():
     model = ChatOpenAI(model="gpt-5-nano")
+
+    faq_graph = create_faq_graph()
 
     def router_node(state: AppState):
         last_user_message = state["messages"][-1].content
@@ -33,9 +35,20 @@ def create_router_graph():
     graph = StateGraph(AppState)
 
     graph.add_node("router", router_node)
+
+    # adiciona subgrafo como nó
+    graph.add_node("faq_graph", faq_graph)
+
     graph.set_entry_point("router")
 
-    # Por enquanto, só finalizamos
-    graph.add_edge("router", END)
+    graph.add_conditional_edges(
+        "router",
+        lambda state: state["route"],
+        {
+            "faq": "faq_graph",
+        },
+    )
+
+    graph.add_edge("faq_graph", END)
 
     return graph.compile()
