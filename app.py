@@ -1,17 +1,21 @@
-from dotenv import load_dotenv
-load_dotenv()
-
-from langchain_core.messages import HumanMessage
+from langgraph.checkpoint.memory import MemorySaver
 from graphs.router import create_router_graph
 
-app = create_router_graph()
+if __name__ == "__main__":
+    graph = create_router_graph()
 
-state = {
-    "messages": [HumanMessage(content="O que é LangGraph?")],
-    "route": None,
-    "steps": 0,
-}
+    # MemorySaver
+    app = graph.with_config(
+        {"checkpointer": MemorySaver()}
+    )
 
-result = app.invoke(state)
+    from langchain_core.messages import HumanMessage
 
-print(result["messages"][-1].content)
+    state = {
+        "messages": [HumanMessage(content="O que é LangGraph?")],
+        "route": None,
+        "steps": 0,
+    }
+
+    result = app.invoke(state)
+    print(result["messages"][-1].content)

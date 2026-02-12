@@ -1,0 +1,6 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "multi_agent_router": "graphs.router:app"
+  }
+}
